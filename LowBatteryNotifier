@@ -1,0 +1,22 @@
+#!/bin/bash
+
+function CheckBatteryAndNotify() {
+    count=-1
+    while [ true ]; do
+        sleep 1
+        batterypercent=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E "percentage" | xargs | cut -d':' -f2 | xargs)
+        batterystate=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E "state" | xargs | cut -d':' -f2 | xargs)
+        _batper="65%"
+        if [[ $batterypercent == $_batper && $batterystate == "discharging" ]]; then
+            $(paplay "$(pwd)/sirentone.wav")
+        fi
+        if [ $count -le 1 ]; then
+            count=$((count+1))
+        fi
+        if [ $count == 0 ]; then
+            $(notify-send --urgency=critical --expire-time=1000 "Low Battery" "Battery $batterypercent left. Please plugin charger immediately.")
+        fi
+    done
+}
+
+CheckBatteryAndNotify
